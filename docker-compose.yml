@@ -1,0 +1,46 @@
+version: '3.9'
+
+services:
+
+  db:
+    image: mysql:8.0
+    container_name: shopnest_db
+    restart: always
+    environment:
+      MYSQL_DATABASE: shopnest_db
+      MYSQL_USER: shopnest_user
+      MYSQL_PASSWORD: shopnest_pass
+      MYSQL_ROOT_PASSWORD: rootpassword
+    volumes:
+      - mysql_data:/var/lib/mysql
+    ports:
+      - "3307:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootpassword"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  web:
+    build: .
+    container_name: shopnest_web
+    restart: always
+    env_file:
+      - .env
+    environment:
+      - DB_HOST=db
+      - DB_PORT=3306
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    command: >
+      sh -c "python manage.py makemigrations &&
+             python manage.py migrate &&
+             python manage.py seed_db &&
+             gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 2"
+
+volumes:
+  mysql_data:
+    driver: local
