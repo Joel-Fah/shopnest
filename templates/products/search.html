@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+
+{% block title %}Search Products — ShopNest{% endblock %}
+
+{% block main_class %}{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto px-4 pb-16">
+
+  <!-- Sticky Header Section -->
+  <div class="sticky top-[60px] z-40 bg-white/90 backdrop-blur-md pt-8 pb-4 border-b border-gray-100 mb-6 -mx-4 px-4 sm:mx-0 sm:px-0">
+    <!-- Page Header -->
+    <div class="mb-6">
+      <h1 class="text-3xl font-semibold text-black">Products</h1>
+      <p class="mt-1 text-sm text-gray-400">Search by name or description.</p>
+    </div>
+
+    <!-- Search Form -->
+    <form method="GET" action="{% url 'products:search' %}">
+      <div class="flex items-center gap-3">
+        <div class="relative flex-1">
+          <!-- Search icon -->
+          <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/>
+          </svg>
+          <input
+            type="text"
+            name="q"
+            id="search-input"
+            value="{{ query }}"
+            placeholder="Search products..."
+            autofocus
+            class="w-full border border-gray-200 rounded-lg pl-10 pr-4 py-3 text-sm text-black placeholder-gray-300 focus:border-black transition-colors duration-200"
+          />
+        </div>
+        <button
+          type="submit"
+          class="bg-black text-white text-sm font-medium rounded-lg px-5 py-3 hover:bg-gray-900 transition-colors duration-200 whitespace-nowrap">
+          Search
+        </button>
+        {% if query %}
+        <a href="{% url 'products:search' %}"
+           class="text-sm text-gray-400 hover:text-black transition-colors duration-200 whitespace-nowrap">
+          Clear
+        </a>
+        {% endif %}
+      </div>
+    </form>
+  </div>
+
+  <!-- Results -->
+  {% if results %}
+    <div class="space-y-px">
+      <!-- Results count -->
+      <p class="text-xs text-gray-400 uppercase tracking-wider font-medium mb-4">
+        {{ results.count }} result{{ results.count|pluralize }} {% if query %}for "{{ query }}"{% endif %}
+      </p>
+
+      <!-- Product list -->
+      {% for product in results %}
+      <div class="group cursor-pointer border border-gray-100 rounded-lg px-5 py-4 hover:border-gray-300 hover:bg-gray-50 transition-colors duration-200"
+           onclick="openModal('{{ product.name|escapejs }}', '{{ product.description|escapejs }}')">
+        <div class="flex items-start justify-between gap-4">
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-3">
+              <span class="text-xs text-gray-300 font-mono">#{{ product.id }}</span>
+              <h3 class="text-sm font-semibold text-black truncate">{{ product.name }}</h3>
+            </div>
+            <p class="mt-1 text-sm text-gray-500 truncate">{{ product.description }}</p>
+          </div>
+          <div class="pt-1">
+            <svg class="w-4 h-4 text-gray-300 group-hover:text-black transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+  {% else %}
+    <!-- No results -->
+    <div class="text-center py-16">
+      <div class="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4">
+        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+      </div>
+      <p class="text-sm font-medium text-black">No products found</p>
+      <p class="mt-1 text-sm text-gray-400">
+        {% if query %}Try a different keyword.{% else %}There are no products in the catalog yet.{% endif %}
+      </p>
+    </div>
+  {% endif %}
+
+</div>
+
+<!-- Details Modal -->
+<div id="product-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden">
+  <!-- Backdrop -->
+  <div class="fixed inset-0 bg-black/30 backdrop-blur-sm transition-opacity" onclick="closeModal()"></div>
+  <!-- Modal Content -->
+  <div class="relative bg-white rounded-2xl shadow-xl w-full max-w-lg mx-4 p-8 transform transition-all border border-gray-100">
+    <button type="button" onclick="closeModal()" class="absolute top-6 right-6 text-gray-400 hover:text-black transition-colors">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    </button>
+    <div class="pr-8">
+      <p class="text-xs font-semibold tracking-widest uppercase text-gray-400 mb-2">Product details</p>
+      <h2 id="modal-title" class="text-2xl font-semibold text-black mb-4"></h2>
+      <p id="modal-desc" class="text-sm text-gray-600 leading-relaxed"></p>
+    </div>
+  </div>
+</div>
+
+<script>
+  function openModal(title, description) {
+    document.getElementById('modal-title').textContent = title;
+    document.getElementById('modal-desc').textContent = description;
+    document.getElementById('product-modal').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeModal() {
+    document.getElementById('product-modal').classList.add('hidden');
+    document.body.style.overflow = 'auto';
+  }
+
+  // Close modal on escape key
+  document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') closeModal();
+  });
+</script>
+{% endblock %}

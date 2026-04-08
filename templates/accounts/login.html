@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+
+{% block title %}Sign in — ShopNest{% endblock %}
+
+{% block main_class %}flex items-center justify-center min-h-screen px-4{% endblock %}
+
+{% block content %}
+<div class="w-full max-w-sm">
+
+  <!-- Logo / Brand -->
+  <div class="mb-10">
+    <p class="text-xs font-semibold tracking-widest uppercase text-gray-400 mb-2">ShopNest</p>
+    <h1 class="text-3xl font-semibold text-black">Welcome back.</h1>
+    <p class="mt-1 text-sm text-gray-400">Sign in to your account to continue.</p>
+  </div>
+
+  <!-- Form -->
+  <form method="POST" class="space-y-4">
+    {% csrf_token %}
+
+    <!-- Username -->
+    <div>
+      <label for="id_username" class="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">
+        Username
+      </label>
+      <input
+        type="text"
+        name="username"
+        id="id_username"
+        autocomplete="username"
+        required
+        class="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm text-black placeholder-gray-300 focus:border-black transition-colors duration-200"
+        placeholder="your username"
+      />
+      {% if form.username.errors %}
+        <p class="mt-1 text-xs text-red-500">{{ form.username.errors|join:", " }}</p>
+      {% endif %}
+    </div>
+
+    <!-- Password -->
+    <div>
+      <label for="id_password" class="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">
+        Password
+      </label>
+      <input
+        type="password"
+        name="password"
+        id="id_password"
+        autocomplete="current-password"
+        required
+        class="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm text-black placeholder-gray-300 focus:border-black transition-colors duration-200"
+        placeholder="••••••••"
+      />
+      {% if form.password.errors %}
+        <p class="mt-1 text-xs text-red-500">{{ form.password.errors|join:", " }}</p>
+      {% endif %}
+    </div>
+
+    <!-- Non-field errors -->
+    {% if form.non_field_errors %}
+    <div class="px-4 py-3 bg-red-50 border border-red-200 rounded-lg">
+      <p class="text-xs text-red-600">{{ form.non_field_errors|join:", " }}</p>
+    </div>
+    {% endif %}
+
+    <!-- Submit -->
+    <button
+      type="submit"
+      class="w-full bg-black text-white text-sm font-medium rounded-lg px-4 py-3 hover:bg-gray-900 transition-colors duration-200 mt-2">
+      Sign in
+    </button>
+  </form>
+
+  <!-- Footer link -->
+  <p class="mt-8 text-center text-sm text-gray-400">
+    Don't have an account?
+    <a href="{% url 'accounts:signup' %}" class="text-black font-medium hover:underline">Sign up</a>
+  </p>
+
+</div>
+{% endblock %}
